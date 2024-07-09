@@ -1,0 +1,13 @@
+{
+  "name": "backend",
+  "scripts": {
+    "start": "tsx watch index.ts"
+  },
+  "dependencies": {
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.2"
+  }
+}

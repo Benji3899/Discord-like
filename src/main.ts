@@ -1,14 +1,26 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
+import { io } from "socket.io-client";
+import { fork } from 'child_process';
+
+// mainWindow accessible à d'autre parties du code
+// (notamment aux gestionnaires d'événements et autres fonctions du fichier)
+let mainWindow: BrowserWindow;
+
+const serverProcess = fork(path.join(__dirname, '../backend/index.ts'));
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit();
-}
+// if (require('electron-squirrel-startup')) {
+//   app.quit();
+// }
+
+// Create Websocket
+const socket = io("ws://localhost:3000");
 
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  // const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -25,6 +37,24 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  // Handle IPC messages
+  ipcMain.on("socket-message", (_, message) => {
+    socket.emit("message", message);
+  });
+
+  // Gestion des événements IPC pour l'envoi de messages
+  const handleMessage = (message: unknown) => {
+    console.log("Received message:", message);
+
+    mainWindow.webContents.send("socket-message", message);
+  };
+
+  socket.on("message", handleMessage);
+
+  mainWindow.on("close", () => {
+    socket.off("message", handleMessage);
+  });
 };
 
 // This method will be called when Electron has finished
@@ -49,5 +79,7 @@ app.on('activate', () => {
   }
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+// Ensure the backend server process is properly handled
+app.on('quit', () => {
+  serverProcess.kill();
+});
