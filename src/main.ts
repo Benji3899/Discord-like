@@ -6,7 +6,6 @@ import { io, Socket } from "socket.io-client";
 let mainWindow: BrowserWindow;
 
 // Déclaration de la variable socket Websocket
-// const socket = io("ws://localhost:3000");
 let socket: Socket;
 
 // Gère la création/suppression des raccourcis sous Windows lors de l'installation/désinstallation.
@@ -50,14 +49,7 @@ const createWindow = () => {
     socket.off("message", handleMessage);
   });
 
-  // Gestion des messages IPC
-  // ipcMain.on("socket-message", (_, message) => {
-  //   console.log('Processus principal envoie message au server:', message);
-  //   // socket.emit("message", message);
-  //   socket.emit("message", { room: "default", message }); // Ajoutez le nom de la salle avec { room: "default", message }
-  // });
-
-  // test Gestion des message Ipc et type de message
+  // Gestion des message Ipc et type de message
   ipcMain.on("socket-message", (_, data) => {
     console.log('Main process sending data to server:', data);
     if (data.type === 'joinRoom') {
@@ -66,7 +58,6 @@ const createWindow = () => {
       socket.emit("message", { room: data.room, message: data.message });
     }
   });
-  // fin test
 };
 
 // This method will be called when Electron has finished
