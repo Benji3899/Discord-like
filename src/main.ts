@@ -1,25 +1,22 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { io } from "socket.io-client";
-import { fork } from 'child_process';
+import { io, Socket } from "socket.io-client";
 
-// mainWindow accessible à d'autre parties du code
-// (notamment aux gestionnaires d'événements et autres fonctions du fichier)
+// mainWindow accessible à d'autre parties du code (notamment aux gestionnaires d'événements et autres fonctions du fichier)
 let mainWindow: BrowserWindow;
 
-const serverProcess = fork(path.join(__dirname, '../backend/index.ts'));
+// Déclaration de la variable socket Websocket
+// const socket = io("ws://localhost:3000");
+let socket: Socket;
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-// if (require('electron-squirrel-startup')) {
-//   app.quit();
-// }
+// Gère la création/suppression des raccourcis sous Windows lors de l'installation/désinstallation.
+if (require('electron-squirrel-startup')) {
+  app.quit();
+}
 
-// Create Websocket
-const socket = io("ws://localhost:3000");
-
+// Fonction pour créer la fenêtre principale de l'application
 const createWindow = () => {
-  // Create the browser window.
-  // const mainWindow = new BrowserWindow({
+  // Crée la fenêtre du navigateur
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -28,25 +25,22 @@ const createWindow = () => {
     },
   });
 
-  // and load the index.html of the app.
+  // Charge le fichier index.html de l'application
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
-  // Open the DevTools.
+  // Ouvre les outils de développement
   mainWindow.webContents.openDevTools();
 
-  // Handle IPC messages
-  ipcMain.on("socket-message", (_, message) => {
-    socket.emit("message", message);
-  });
+  // Initialise la connexion WebSocket
+  socket = io("ws://localhost:3000");
 
   // Gestion des événements IPC pour l'envoi de messages
   const handleMessage = (message: unknown) => {
-    console.log("Received message:", message);
-
+    console.log('Received message:', message);
     mainWindow.webContents.send("socket-message", message);
   };
 
@@ -54,6 +48,13 @@ const createWindow = () => {
 
   mainWindow.on("close", () => {
     socket.off("message", handleMessage);
+  });
+
+  // Gestion des messages IPC
+  ipcMain.on("socket-message", (_, message) => {
+    console.log('Processus principal envoie message au server:', message);
+    // socket.emit("message", message);
+    socket.emit("message", { room: "default", message }); // Ajoutez le nom de la salle avec { room: "default", message }
   });
 };
 
@@ -77,9 +78,4 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-});
-
-// Ensure the backend server process is properly handled
-app.on('quit', () => {
-  serverProcess.kill();
 });
