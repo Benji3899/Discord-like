@@ -5,7 +5,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 // Exposer une API sécurisée à la fenêtre de rendu via contextBridge
 contextBridge.exposeInMainWorld('electron', {
-    sendMessage: (message: string) => ipcRenderer.send('socket-message', message),
+    sendMessage: (data: { type: string, room: string, message?: string }) => ipcRenderer.send('socket-message', data),
     onMessage: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => ipcRenderer.on('socket-message', callback),
     offMessage: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => ipcRenderer.off('socket-message', callback),
 });

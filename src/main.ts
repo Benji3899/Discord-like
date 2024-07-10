@@ -39,7 +39,7 @@ const createWindow = () => {
   socket = io("ws://localhost:3000");
 
   // Gestion des événements IPC pour l'envoi de messages
-  const handleMessage = (message: unknown) => {
+  const handleMessage = (message: string) => {
     console.log('Received message:', message);
     mainWindow.webContents.send("socket-message", message);
   };
@@ -51,11 +51,22 @@ const createWindow = () => {
   });
 
   // Gestion des messages IPC
-  ipcMain.on("socket-message", (_, message) => {
-    console.log('Processus principal envoie message au server:', message);
-    // socket.emit("message", message);
-    socket.emit("message", { room: "default", message }); // Ajoutez le nom de la salle avec { room: "default", message }
+  // ipcMain.on("socket-message", (_, message) => {
+  //   console.log('Processus principal envoie message au server:', message);
+  //   // socket.emit("message", message);
+  //   socket.emit("message", { room: "default", message }); // Ajoutez le nom de la salle avec { room: "default", message }
+  // });
+
+  // test Gestion des message Ipc et type de message
+  ipcMain.on("socket-message", (_, data) => {
+    console.log('Main process sending data to server:', data);
+    if (data.type === 'joinRoom') {
+      socket.emit("joinRoom", data.room);
+    } else if (data.type === 'message') {
+      socket.emit("message", { room: data.room, message: data.message });
+    }
   });
+  // fin test
 };
 
 // This method will be called when Electron has finished

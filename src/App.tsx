@@ -5,7 +5,7 @@ import { ChatRoom } from './Components/ChatRoom';
 declare global {
     interface Window {
         electron: {
-            sendMessage: (message: string) => void;
+            sendMessage: (message: { type: string; room: string; message?: string }) => void;
             onMessage: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => void;
             offMessage: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => void;
         };
