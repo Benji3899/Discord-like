@@ -1,11 +1,19 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
+import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 
-import { contextBridge, ipcRenderer } from 'electron';
-
-// Exposer une API sécurisée à la fenêtre de rendu via contextBridge
-contextBridge.exposeInMainWorld('electron', {
-    sendMessage: (data: { type: string, room: string, message?: string }) => ipcRenderer.send('socket-message', data),
-    onMessage: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => ipcRenderer.on('socket-message', callback),
-    offMessage: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => ipcRenderer.off('socket-message', callback),
+contextBridge.exposeInMainWorld("MessageAPI", {
+    // Ajoute un listener pour les messages reçus via IPC
+    addMessageListener: (callback: (message: unknown) => void) => {
+        const wrapperCallback = (_: IpcRendererEvent, message: unknown) =>
+            callback(message);
+        ipcRenderer.on("socket-message", wrapperCallback);
+        return () => ipcRenderer.off("socket-message", wrapperCallback);
+    },
+    // Envoie un message via IPC
+    send(message: unknown) {
+        ipcRenderer.send("socket-message", message);
+    },
+    // Ouvre une nouvelle fenêtre de chat pour un salon spécifique
+    openChatWindow(roomId: string) {
+        ipcRenderer.send('open-chat-window', roomId);
+    }
 });

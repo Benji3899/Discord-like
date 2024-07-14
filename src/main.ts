@@ -1,22 +1,19 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { io, Socket } from "socket.io-client";
-
-// mainWindow accessible à d'autre parties du code (notamment aux gestionnaires d'événements et autres fonctions du fichier)
-let mainWindow: BrowserWindow;
-
-// Déclaration de la variable socket Websocket
-let socket: Socket;
+import { io } from "socket.io-client";
 
 // Gère la création/suppression des raccourcis sous Windows lors de l'installation/désinstallation.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+// Initialise la connexion WebSocket
+const socket = io("ws://localhost:3000");
+
 // Fonction pour créer la fenêtre principale de l'application
 const createWindow = () => {
   // Crée la fenêtre du navigateur
-  mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -34,9 +31,6 @@ const createWindow = () => {
   // Ouvre les outils de développement
   mainWindow.webContents.openDevTools();
 
-  // Initialise la connexion WebSocket
-  socket = io("ws://localhost:3000");
-
   // Gestion des événements IPC pour l'envoi de messages
   const handleMessage = (message: string) => {
     console.log('Received message:', message);
@@ -50,14 +44,32 @@ const createWindow = () => {
   });
 
   // Gestion des message Ipc et type de message
-  ipcMain.on("socket-message", (_, data) => {
-    console.log('Main process sending data to server:', data);
-    if (data.type === 'joinRoom') {
-      socket.emit("joinRoom", data.room);
-    } else if (data.type === 'message') {
-      socket.emit("message", { room: data.room, message: data.message });
-    }
+  ipcMain.on("socket-message", (_, message) => {
+    socket.emit("message", message);
   });
+
+  ipcMain.on('open-chat-window', (_, roomId) => {
+    createChatWindow(roomId);
+  });
+
+  const createChatWindow = (roomId: string) => {
+    const chatWindow = new BrowserWindow({
+      width: 400,
+      height: 600,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+      },
+    });
+
+    if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+      chatWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/chat/${roomId}`);
+    } else {
+      chatWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/chat.html`));
+    }
+
+    chatWindow.webContents.openDevTools();
+  };
+
 };
 
 // This method will be called when Electron has finished

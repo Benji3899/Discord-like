@@ -1,37 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useSocket } from "../providers/SocketProvider";
 
-interface MessageInputProps {
-    onSend: (message: string) => void;
-}
+// Composant pour l'entrée des messages de chat
+export const MessageInput = () => {
+    const [message, setMessage] = useState("");
+    const socket = useSocket();
 
-// Composant pour saisir et envoyer un message
-export const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
-    const [message, setMessage] = useState('');
-
-    // Gérer l'appui sur la touche "Entrée"
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            send();
-        }
-    };
-
-    // Envoyer le message
-    const send = () => {
-        if (message.trim()) {
-            onSend(message);
-            setMessage('');
-        }
-    };
 
     return (
-        <div>
+        <form
+            className="form"
+            onSubmit={(event) => {
+                event.preventDefault();
+                if (message.trim() === "") {
+                    return; // Ne rien faire si le message est vide
+                }
+                // Envoie le message via le socket
+                socket.send({ type: "chat-message", content: message });
+                // et réinitialise l'entrée
+                setMessage("");
+            }}
+        >
             <input
                 type="text"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
+                // Met à jour l'état du message à chaque changement dans l'input
+                onChange={(event) => setMessage(event.target.value)}
             />
-            <button onClick={send}>Send</button>
-        </div>
+            <input type="submit" />
+        </form>
     );
 };

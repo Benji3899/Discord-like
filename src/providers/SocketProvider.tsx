@@ -1,0 +1,49 @@
+import { ReactNode, createContext, useContext, useMemo } from "react";
+import {io} from "socket.io-client";
+
+export type AppSocket = {
+    onMessage(callback: (message: unknown) => void): () => void;
+    send(message: unknown): void;
+};
+
+// Declare typings of code exposed by Electron on window object
+declare global {
+    interface Window {
+        MessageAPI: {
+            addMessageListener(callback: (message: unknown) => void): () => void;
+            send(message: unknown): void;
+        }
+    }
+}
+
+// Contexte pour fournir le socket à toute l'application
+const context = createContext<AppSocket | null>(null);
+
+// Fournisseur de socket qui gère la connexion et la communication via WebSocket
+export function SocketProvider({ children }: { children: ReactNode }) {
+const websocket = useMemo(() => io('http://localhost:3000'), [])
+
+    const appSocket = useMemo<AppSocket>(
+        () => ({
+            onMessage(callback) {
+                websocket.on('message', callback)
+                return() => {
+                    websocket.off('message', callback)
+                }
+            },
+            send(message) {
+                websocket.send(message)
+            },
+        }),[]
+    );
+    return <context.Provider value={appSocket}>{children}</context.Provider>;
+}
+
+// Hook personnalisé pour utiliser le socket dans les composants
+export function useSocket() {
+    const socket = useContext(context);
+    if (!socket) {
+        throw new Error("useSocket must be used within a SocketProvider");
+    }
+    return socket;
+}
