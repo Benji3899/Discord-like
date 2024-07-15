@@ -47,29 +47,6 @@ const createWindow = () => {
   ipcMain.on("socket-message", (_, message) => {
     socket.emit("message", message);
   });
-
-  ipcMain.on('open-chat-window', (_, roomId) => {
-    createChatWindow(roomId);
-  });
-
-  const createChatWindow = (roomId: string) => {
-    const chatWindow = new BrowserWindow({
-      width: 400,
-      height: 600,
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-      },
-    });
-
-    if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-      chatWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/chat/${roomId}`);
-    } else {
-      chatWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/chat.html`));
-    }
-
-    chatWindow.webContents.openDevTools();
-  };
-
 };
 
 // This method will be called when Electron has finished

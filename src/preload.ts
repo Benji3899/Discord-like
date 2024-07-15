@@ -11,9 +11,5 @@ contextBridge.exposeInMainWorld("MessageAPI", {
     // Envoie un message via IPC
     send(message: unknown) {
         ipcRenderer.send("socket-message", message);
-    },
-    // Ouvre une nouvelle fenêtre de chat pour un salon spécifique
-    openChatWindow(roomId: string) {
-        ipcRenderer.send('open-chat-window', roomId);
     }
 });
