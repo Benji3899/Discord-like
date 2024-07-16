@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import cors from 'cors';
 import express from 'express';
+import http from 'http';
 // Fonction principale pour initialiser le serveur
 function main() {
         const app = express();
@@ -8,13 +9,20 @@ function main() {
             origin: 'http://localhost:5173'
         }));
 
-        const server = require('http').createServer(app);
+        const server = http.createServer(app);
         const io = new Server(server, {
             cors: {
                 origin: "http://localhost:5173",
                 methods: ["GET", "POST"]
             }
         });
+        // const server = require('http').createServer(app);
+        // const io = new Server(server, {
+        //     cors: {
+        //         origin: "http://localhost:5173",
+        //         methods: ["GET", "POST"]
+        //     }
+        // });
 
 
         // Écoute les connexions entrantes
@@ -28,11 +36,11 @@ function main() {
             });
 
             // Écoute les messages entrants sur la connexion
-            socket.on("message", ({room, message}) => {
+            socket.on("message", ({ room, message }) => {
                 console.log("Message reçu :", message, "dans la salle :", room);
 
                 // Émet le message uniquement aux sockets dans la même salle
-                io.to(room).emit("message", { type: "chat-message", content: message });
+                io.to(room).emit("message", { type: "chat-message", content: message, room });
             });
 
             // Déconnexion

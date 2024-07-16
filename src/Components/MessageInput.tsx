@@ -6,7 +6,6 @@ export const MessageInput = ({ room }: { room: string }) => {
     const [message, setMessage] = useState("");
     const socket = useSocket();
 
-
     return (
         <form
             className="form"
