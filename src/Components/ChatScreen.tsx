@@ -14,6 +14,9 @@ type MessagesByRoom = {
     [room: string]: Message[];
 };
 
+//  Identifiant utilisateur unique dans chaque fenêtre
+const generateUserId = () => `user-${Math.floor(Math.random() * 1000)}`;
+
 // Composant principal de la salle de chat, affichant la liste des messages et l'entrée des messages
 export const ChatScreen = () => {
     const [room, setRoom] = useState("general");
@@ -22,6 +25,7 @@ export const ChatScreen = () => {
         technologie: [],
         jeux: [],
     });
+    const [userId] = useState(generateUserId());
     const socket = useSocket();
 
     // Rejoindre une salle à chaque fois que `room` change
@@ -41,16 +45,22 @@ export const ChatScreen = () => {
         setRoom(newRoom);
     };
 
+    const openNewWindow = () => {
+        window.MessageAPI.newWindow();
+    };
+
     return (
         <div>
             <h1 className="text-center mb-2">Salon : {room}</h1>
+            <h2>Utilisateur : {userId}</h2>
             <div>
                 <button onClick={() => joinRoom("general")}>Général</button>
                 <button onClick={() => joinRoom("technologie")}>Technologie</button>
                 <button onClick={() => joinRoom("jeux")}>Jeux Vidéo</button>
             </div>
             <MessageList room={room} messages={messagesByRoom[room]} addMessage={addMessage} />
-            <MessageInput room={room} />
+            <MessageInput room={room} userId={userId} />
+            <button onClick={openNewWindow}>Ouvrir une nouvelle fenêtre</button>
         </div>
     );
 };

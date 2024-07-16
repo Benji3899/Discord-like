@@ -15,5 +15,9 @@ contextBridge.exposeInMainWorld("MessageAPI", {
     // Rejoindre une salle
     joinRoom(room: string) {
         ipcRenderer.send("join-room", room);
+    },
+    // Ouvrir une nouvelle fenêtre
+    newWindow() {
+        ipcRenderer.send("new-window");
     }
 });
