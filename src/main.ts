@@ -44,8 +44,12 @@ const createWindow = () => {
   });
 
   // Gestion des message Ipc et type de message
-  ipcMain.on("socket-message", (_, message) => {
-    socket.emit("message", message);
+  ipcMain.on("socket-message", (_, { room, message }) => {
+    socket.emit("message", { room, message });
+  });
+
+  ipcMain.on("join-room", (_, room) => {
+    socket.emit("joinRoom", room);
   });
 };
 

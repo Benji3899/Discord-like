@@ -3,7 +3,8 @@ import {io} from "socket.io-client";
 
 export type AppSocket = {
     onMessage(callback: (message: unknown) => void): () => void;
-    send(message: unknown): void;
+    send(message: { room: string, message: string }): void;
+    joinRoom(room: string): void;
 };
 
 // Declare typings of code exposed by Electron on window object
@@ -11,7 +12,8 @@ declare global {
     interface Window {
         MessageAPI: {
             addMessageListener(callback: (message: unknown) => void): () => void;
-            send(message: unknown): void;
+            send(message: { room: string, message: string }): void;
+            joinRoom(room: string): void;
         }
     }
 }
@@ -21,7 +23,7 @@ const context = createContext<AppSocket | null>(null);
 
 // Fournisseur de socket qui gère la connexion et la communication via WebSocket
 export function SocketProvider({ children }: { children: ReactNode }) {
-const websocket = useMemo(() => io('http://localhost:3000'), [])
+const websocket = useMemo(() => io('http://localhost:3000'), []);
 
     const appSocket = useMemo<AppSocket>(
         () => ({
@@ -32,9 +34,12 @@ const websocket = useMemo(() => io('http://localhost:3000'), [])
                 }
             },
             send(message) {
-                websocket.send(message)
+                websocket.emit('message', message);
             },
-        }),[]
+            joinRoom(room) {
+                websocket.emit('joinRoom', room)
+            },
+        }),[websocket]
     );
     return <context.Provider value={appSocket}>{children}</context.Provider>;
 }

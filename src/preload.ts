@@ -9,7 +9,11 @@ contextBridge.exposeInMainWorld("MessageAPI", {
         return () => ipcRenderer.off("socket-message", wrapperCallback);
     },
     // Envoie un message via IPC
-    send(message: unknown) {
+    send(message: { room: string, message: string }) {
         ipcRenderer.send("socket-message", message);
+    },
+    // Rejoindre une salle
+    joinRoom(room: string) {
+        ipcRenderer.send("join-room", room);
     }
 });

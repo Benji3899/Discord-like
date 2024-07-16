@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useSocket } from "../providers/SocketProvider";
 
 // Composant pour l'entrée des messages de chat
-export const MessageInput = () => {
+export const MessageInput = ({ room }: { room: string }) => {
     const [message, setMessage] = useState("");
     const socket = useSocket();
 
@@ -16,7 +16,7 @@ export const MessageInput = () => {
                     return; // Ne rien faire si le message est vide
                 }
                 // Envoie le message via le socket
-                socket.send({ type: "chat-message", content: message });
+                socket.send({ room, message });
                 // et réinitialise l'entrée
                 setMessage("");
             }}

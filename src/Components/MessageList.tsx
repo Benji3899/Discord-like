@@ -18,38 +18,33 @@ function isChatEvent(
     );
 }
 
-// Composant pour afficher la liste des messages
-export const MessageList = () => {
-    const [messages, setMessage] = useState([
-        {
-            id: 1,
-            author: "Benji",
-            content: "Bonjour Evan, comment vas-tu ?",
-        },
-        {
-            id: 2,
-            author: "Evan",
-            content: "Salut, je vais bien et toi ?",
-        },
-    ]);
-    const lastMessageRef = useRef(null);
 
-    const socket = useSocket();
-    useEffect(
-        () =>
-            socket.onMessage((message) => {
+
+// Composant pour afficher la liste des messages
+
+    export const MessageList = ({ room }: { room: string }) => {
+        const [messages, setMessages] = useState<{ id: number, author: string, content: string }[]>([]);
+        const lastMessageRef = useRef<HTMLDivElement | null>(null);
+        const socket = useSocket();
+
+        useEffect(() => {
+            // Gestionnaire pour les nouveaux messages
+            const handleMessage = (message: unknown) => {
                 if (!isChatEvent(message)) {
                     return;
                 }
-                // Ajoute le nouveau message à la liste des messages
-                setMessage((messages) => [
+                setMessages((messages) => [
                     ...messages,
-                    { id: messages.length + 1, author: "Benjamin", content: message.content },
+                    { id: messages.length + 1, author: "User", content: message.content },
                 ]);
-            }),
-        [socket]
-    );
+            };
 
+            const unsubscribe = socket.onMessage(handleMessage);
+            return () => {
+                unsubscribe();
+            };
+        }, [socket]);
+        
     useEffect(() => {
         // Fait défiler vers le dernier message
         if (lastMessageRef.current) {
