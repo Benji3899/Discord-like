@@ -15,7 +15,7 @@ type MessagesByRoom = {
 };
 
 //  Identifiant utilisateur unique dans chaque fenêtre
-const generateUserId = () => `user-${Math.floor(Math.random() * 1000)}`;
+ const generateUserId = () => `user-${Math.floor(Math.random() * 1000)}`;
 
 // Composant principal de la salle de chat, affichant la liste des messages et l'entrée des messages
 export const ChatScreen = () => {
@@ -26,11 +26,28 @@ export const ChatScreen = () => {
         jeux: [],
     });
     const [userId] = useState(generateUserId());
+    const [prenom, setPrenom] = useState("");
     const socket = useSocket();
 
-    // Rejoindre une salle à chaque fois que `room` change
+    // Rejoindre une salle à chaque fois que 'room' change
     useEffect(() => {
         socket.joinRoom(room);
+
+        // Récupérer les messages du serveur
+        fetch(`http://localhost:3000/messages/${room}`)
+            .then(response => response.json())
+            .then(data => {
+                setMessagesByRoom(prevMessagesByRoom => ({
+                    ...prevMessagesByRoom,
+                    [room]: data
+                }));
+            });
+
+        // Recevoir le prénom attribué lors de la connexion
+        socket.on("connect", () => {
+            const newPrenom = prompt("Entrez votre prénom:");
+            setPrenom(newPrenom || "Anonyme");
+        });
     }, [room, socket]);
 
     // Ajouter un message à la salle courante
@@ -52,14 +69,14 @@ export const ChatScreen = () => {
     return (
         <div>
             <h1 className="text-center mb-2">Salon : {room}</h1>
-            <h2>Utilisateur : {userId}</h2>
+            <h2>Utilisateur : {prenom}</h2>
             <div>
                 <button onClick={() => joinRoom("general")}>Général</button>
                 <button onClick={() => joinRoom("technologie")}>Technologie</button>
                 <button onClick={() => joinRoom("jeux")}>Jeux Vidéo</button>
             </div>
             <MessageList room={room} messages={messagesByRoom[room]} addMessage={addMessage} />
-            <MessageInput room={room} userId={userId} />
+            <MessageInput room={room} />
             <button onClick={openNewWindow}>Ouvrir une nouvelle fenêtre</button>
         </div>
     );

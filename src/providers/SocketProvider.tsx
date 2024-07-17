@@ -5,6 +5,7 @@ export type AppSocket = {
     onMessage(callback: (message: unknown) => void): () => void;
     send(message: { room: string, message: string }): void;
     joinRoom(room: string): void;
+    on(event: string, callback: (...args: any[]) => void): void;
 };
 
 // Déclare les types de code exposé par Electron sur l'objet window
@@ -14,6 +15,7 @@ declare global {
             addMessageListener(callback: (message: unknown) => void): () => void;
             send(message: { room: string, message: string }): void;
             joinRoom(room: string): void;
+            newWindow(): void;
         }
     }
 }
@@ -39,6 +41,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
             joinRoom(room) {
                 websocket.emit('joinRoom', room);
             },
+            on(event, callback) {
+                websocket.on(event, callback);
+            }
         }), [websocket]
     );
 

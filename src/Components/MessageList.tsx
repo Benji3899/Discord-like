@@ -11,18 +11,14 @@ interface ChatEvent {
     type: "chat-message";
     content: string;
     room: string; // Ajout du champ room pour vérifier la salle
-}
-
-interface Message {
     id: number;
     author: string;
-    content: string;
 }
 
 interface MessageListProps {
     room: string;
-    messages: Message[];
-    addMessage: (message: Message) => void;
+    messages: { id: number, author: string, content: string }[];
+    addMessage: (message: { id: number, author: string, content: string }) => void;
 }
 
 // Fonction de type guard pour vérifier si un événement est un message de chat
@@ -44,14 +40,14 @@ export const MessageList = ({ room, messages, addMessage }: MessageListProps) =>
             if (message.room !== room) {
                 return; // Ignore les messages qui ne sont pas destinés à la salle actuelle
             }
-            addMessage({ id: messages.length + 1, author: "User", content: message.content });
+            addMessage({ id: message.id, author: message.author, content: message.content });
         };
 
         const unsubscribe = socket.onMessage(handleMessage);
         return () => {
             unsubscribe();
         };
-    }, [socket, room, messages.length, addMessage]);
+    }, [socket, room, addMessage]);
 
     useEffect(() => {
         // Fait défiler vers le dernier message
