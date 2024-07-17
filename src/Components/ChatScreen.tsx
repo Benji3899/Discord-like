@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { MessageInput } from "./MessageInput";
-import { MessageList } from "./MessageList";
-import { useSocket } from "../providers/SocketProvider";
+import React, {useEffect, useState} from "react";
+import {MessageInput} from "./MessageInput";
+import {MessageList} from "./MessageList";
+import {useSocket} from "../providers/SocketProvider";
 
 // Définir le type pour les messages
 interface Message {
@@ -14,8 +14,8 @@ type MessagesByRoom = {
     [room: string]: Message[];
 };
 
-//  Identifiant utilisateur unique dans chaque fenêtre
- const generateUserId = () => `user-${Math.floor(Math.random() * 1000)}`;
+// Identifiant utilisateur unique dans chaque fenêtre
+const generateUserId = () => `user-${Math.floor(Math.random() * 1000)}`;
 
 // Composant principal de la salle de chat, affichant la liste des messages et l'entrée des messages
 export const ChatScreen = () => {
@@ -45,8 +45,11 @@ export const ChatScreen = () => {
 
         // Recevoir le prénom attribué lors de la connexion
         socket.on("connect", () => {
-            const newPrenom = prompt("Entrez votre prénom:");
-            setPrenom(newPrenom || "Anonyme");
+            socket.emit("requestPrenom"); // Demande le prénom au backend
+        });
+
+        socket.on("receivePrenom", (prenom: string) => {
+            setPrenom(prenom); // Assigne le prénom reçu du backend
         });
     }, [room, socket]);
 
@@ -75,8 +78,8 @@ export const ChatScreen = () => {
                 <button onClick={() => joinRoom("technologie")}>Technologie</button>
                 <button onClick={() => joinRoom("jeux")}>Jeux Vidéo</button>
             </div>
-            <MessageList room={room} messages={messagesByRoom[room]} addMessage={addMessage} />
-            <MessageInput room={room} />
+            <MessageList room={room} messages={messagesByRoom[room]} addMessage={addMessage}/>
+            <MessageInput room={room}/>
             <button onClick={openNewWindow}>Ouvrir une nouvelle fenêtre</button>
         </div>
     );

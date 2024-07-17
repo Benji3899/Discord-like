@@ -1,4 +1,4 @@
-import { IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
+import {IpcRendererEvent, contextBridge, ipcRenderer} from "electron";
 
 contextBridge.exposeInMainWorld("MessageAPI", {
     // Ajoute un listener pour les messages reçus via IPC

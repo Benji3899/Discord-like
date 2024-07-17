@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import { useSocket } from "../providers/SocketProvider";
+import React, {useEffect, useRef} from "react";
+import {useSocket} from "../providers/SocketProvider";
 
 // Composant pour afficher un message individuel
-function Message({ children }: { children: React.ReactNode }) {
+function Message({children}: { children: React.ReactNode }) {
     return <div>{children}</div>;
 }
 
@@ -27,7 +27,7 @@ function isChatEvent(event: unknown): event is ChatEvent {
 }
 
 // Composant pour afficher la liste des messages
-export const MessageList = ({ room, messages, addMessage }: MessageListProps) => {
+export const MessageList = ({room, messages, addMessage}: MessageListProps) => {
     const lastMessageRef = useRef<HTMLDivElement | null>(null);
     const socket = useSocket();
 
@@ -40,7 +40,7 @@ export const MessageList = ({ room, messages, addMessage }: MessageListProps) =>
             if (message.room !== room) {
                 return; // Ignore les messages qui ne sont pas destinés à la salle actuelle
             }
-            addMessage({ id: message.id, author: message.author, content: message.content });
+            addMessage({id: message.id, author: message.author, content: message.content});
         };
 
         const unsubscribe = socket.onMessage(handleMessage);
@@ -52,7 +52,7 @@ export const MessageList = ({ room, messages, addMessage }: MessageListProps) =>
     useEffect(() => {
         // Fait défiler vers le dernier message
         if (lastMessageRef.current) {
-            lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
+            lastMessageRef.current.scrollIntoView({behavior: "smooth"});
         }
     }, [messages]);
 
