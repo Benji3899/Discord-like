@@ -1,5 +1,5 @@
-import {ReactNode, createContext, useContext, useMemo} from "react";
-import {io, Socket} from "socket.io-client";
+import { ReactNode, createContext, useContext, useMemo } from "react";
+import { io, Socket } from "socket.io-client";
 
 export type AppSocket = {
     onMessage(callback: (message: unknown) => void): () => void;
@@ -7,6 +7,7 @@ export type AppSocket = {
     joinRoom(room: string): void;
     on(event: string, callback: (...args: any[]) => void): void;
     emit(event: string, ...args: any[]): void;
+    getId(): string | undefined;
 };
 
 // Déclare les types de code exposé par Electron sur l'objet window
@@ -25,10 +26,10 @@ declare global {
 const context = createContext<AppSocket | null>(null);
 
 // Fournisseur de socket qui gère la connexion et la communication via WebSocket
-export function SocketProvider({children}: { children: ReactNode }) {
-    const websocket = useMemo(() => io('http://localhost:3000'), []);
+export function SocketProvider({ children }: { children: ReactNode }) {
+    const websocket: Socket = useMemo(() => io('http://localhost:3000'), []);
 
-    const appSocket = useMemo<AppSocket>(
+    const appSocket: AppSocket = useMemo<AppSocket>(
         () => ({
             onMessage(callback) {
                 websocket.on('message', callback);
@@ -47,6 +48,9 @@ export function SocketProvider({children}: { children: ReactNode }) {
             },
             emit(event, ...args) {
                 websocket.emit(event, ...args);
+            },
+            getId() {
+                return websocket.id;
             }
         }), [websocket]
     );

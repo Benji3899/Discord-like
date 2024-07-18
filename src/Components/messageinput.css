@@ -1,16 +1,31 @@
 .message-input-container {
     display: flex;
     padding: 10px;
-    border-top: 1px solid #ddd;
+    background-color: #2c2f33;
+    border-top: 1px solid #4f545c;
+    position: sticky;
+    bottom: 0;
 }
 
 .message-input-container input[type="text"] {
     flex: 1;
     padding: 10px;
-    font-size: 16px;
+    border: 1px solid #4f545c;
+    border-radius: 5px;
+    margin-right: 10px;
+    background-color: #23272a;
+    color: white;
 }
 
 .message-input-container input[type="submit"] {
-    padding: 10px;
-    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #7289da;
+    color: white;
+    cursor: pointer;
+}
+
+.message-input-container input[type="submit"]:hover {
+    background-color: #5b6eae;
 }

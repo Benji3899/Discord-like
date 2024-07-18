@@ -1,13 +1,17 @@
 import {Server} from "socket.io";
 import cors from 'cors';
-import express from 'express';
+import express from "express";
 import http from 'http';
+import {v4 as uuidv4} from 'uuid';
 
 // Structure pour stocker les messages par salon
-const messagesByRoom: { [room: string]: { id: number, author: string, content: string }[] } = {};
+const messagesByRoom: { [room: string]: { id: string, author: string, content: string }[] } = {};
 
 // Liste des prénoms
 const prenoms = ["Benjamin", "Tristan", "Evan", "Lucie", "Clément", "Alexandre", "Yassine", "Anthony", "Paul", "Jérémy"];
+
+// Association des prénoms avec les identifiants des sockets
+const prenomBySocketId: { [socketId: string]: string } = {};
 
 // Ajout de la méthode hashCode à String
 declare global {
@@ -21,7 +25,7 @@ String.prototype.hashCode = function () {
     for (i = 0; i < this.length; i++) {
         chr = this.charCodeAt(i);
         hash = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
+        hash |= 0;
     }
     return hash;
 };
@@ -57,24 +61,24 @@ function main() {
         console.log("Nouvelle connexion :", socket.id);
 
         // Assigner un prénom à chaque socket
-        socket.data.prenom = generatePrenom(socket.id);
+        const prenom = generatePrenom(socket.id);
+        prenomBySocketId[socket.id] = prenom;
 
-        // Envoyer le prénom au frontend
         socket.on("requestPrenom", () => {
-            socket.emit("receivePrenom", socket.data.prenom);
+            socket.emit("receivePrenom", prenom);
         });
 
         // Rejoindre une salle spécifique
         socket.on("joinRoom", (room) => {
             socket.join(room);
-            console.log(`${socket.data.prenom} - (${socket.id}) a rejoint la salle ${room}`);
+            console.log(`${prenom} - (${socket.id}) a rejoint la salle ${room}`);
         });
 
         // Écoute les messages entrants sur la connexion
-        socket.on("message", ({room, message}) => {
-            console.log(`Message reçu de ${socket.data.prenom} : ${message} dans la salle ${room}`);
+        socket.on("message", ({ room, message }) => {
+            console.log(`Message reçu de ${prenom} : ${message} dans la salle ${room}`);
 
-            const newMessage = {id: Date.now(), author: socket.data.prenom, content: message};
+            const newMessage = { id: uuidv4(), author: prenom, content: message }; // Utilisation de UUID
 
             if (!messagesByRoom[room]) {
                 messagesByRoom[room] = [];
@@ -83,17 +87,13 @@ function main() {
             messagesByRoom[room].push(newMessage);
 
             // Émet le message uniquement aux sockets dans la même salle
-            io.to(room).emit("message", {type: "chat-message", ...newMessage, room});
-        });
-
-        // Demander le prénom
-        socket.on("requestPrenom", () => {
-            socket.emit("receivePrenom", socket.data.prenom);
+            io.to(room).emit("message", { type: "chat-message", ...newMessage, room });
         });
 
         // Déconnexion
         socket.on("disconnect", () => {
-            console.log(`Déconnexion de ${socket.data.prenom} :`, socket.id);
+            console.log(`Déconnexion de ${prenom} :`, socket.id);
+            delete prenomBySocketId[socket.id]; // Supprime l'association
         });
     });
 

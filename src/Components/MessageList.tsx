@@ -12,14 +12,14 @@ interface ChatEvent {
     type: "chat-message";
     content: string;
     room: string; // Ajout du champ room pour vérifier la salle
-    id: number;
+    id: string; // string pour l'utilisation de uuid
     author: string;
 }
 
 interface MessageListProps {
     room: string;
-    messages: { id: number, author: string, content: string }[];
-    addMessage: (message: { id: number, author: string, content: string }) => void;
+    messages: { id: string, author: string, content: string }[];
+    addMessage: (message: { id: string, author: string, content: string }) => void;
     prenom: string;
 }
 
@@ -32,6 +32,7 @@ function isChatEvent(event: unknown): event is ChatEvent {
 export const MessageList = ({ room, messages, addMessage, prenom }: MessageListProps) => {
     const lastMessageRef = useRef<HTMLDivElement | null>(null);
     const socket = useSocket();
+    // const socketId = socket.getId();
 
     useEffect(() => {
         // Gestionnaire pour les nouveaux messages
@@ -64,7 +65,7 @@ export const MessageList = ({ room, messages, addMessage, prenom }: MessageListP
                 <div
                     key={message.id}
                     ref={index === messages.length - 1 ? lastMessageRef : null}
-                    className={`containerMessage ${message.author === prenom ? "my-message" : "other-message"}`}
+                    className={message.author === prenom ? "my-message" : "other-message"}
                 >
                     <Message key={message.id} className={message.author === prenom ? "my-message" : "other-message"}>
                         {message.author} : {message.content}

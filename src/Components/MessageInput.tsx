@@ -27,7 +27,7 @@ export const MessageInput = ({room}: { room: string }) => {
                 // Met à jour l'état du message à chaque changement dans l'input
                 onChange={(event) => setMessage(event.target.value)}
             />
-            <input type="submit"/>
+            <input type="submit" value="Envoyer"/>
         </form>
     );
 };

@@ -6,22 +6,24 @@
     flex-direction: column;
 }
 
-.containerMessage {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    max-width: 60%; /* Limite la largeur maximale des messages */
-    word-wrap: break-word; /* Permet de passer à la ligne si un mot est trop long */
-}
-
 .my-message {
-    background-color: #dcf8c6;
     align-self: flex-end;
-    text-align: right;
+    background-color: #4f545c;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
 }
 
 .other-message {
-    background-color: #ffffff;
     align-self: flex-start;
-    text-align: left;
+    background-color: #7289da;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
 }
