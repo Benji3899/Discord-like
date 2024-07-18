@@ -1,17 +1,12 @@
-import {app, BrowserWindow, ipcMain} from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import {io} from "socket.io-client";
 
 // Gère la création/suppression des raccourcis sous Windows lors de l'installation/désinstallation.
 if (require('electron-squirrel-startup')) {
     app.quit();
 }
 
-// let mainWindow: BrowserWindow | null;
 let windows: BrowserWindow[] = [];
-
-// Initialise la connexion WebSocket
-const socket = io("ws://localhost:3000");
 
 // Fonction pour créer la fenêtre principale de l'application
 const createWindow = () => {
@@ -34,25 +29,12 @@ const createWindow = () => {
     // Ouvre les outils de développement
     window.webContents.openDevTools();
 
-    // Gestion des événements IPC pour l'envoi de messages
-    const handleMessage = (message: { room: string, message: string }) => {
-        window.webContents.send("socket-message", message);
-    };
-
-    socket.on("message", handleMessage);
-
     window.on("closed", () => {
-        socket.off("message", handleMessage);
         windows = windows.filter(win => win !== window);
     });
 
-    // Gestion des message Ipc et type de message
-    ipcMain.on("socket-message", (_, {room, message}) => {
-        socket.emit("message", {room, message});
-    });
-
-    ipcMain.on("join-room", (_, room) => {
-        socket.emit("joinRoom", room);
+    ipcMain.on("new-window", () => {
+        createWindow();
     });
 
     windows.push(window);
@@ -63,10 +45,6 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
     createWindow();
-
-    ipcMain.on("new-window", () => {
-        createWindow();
-    });
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

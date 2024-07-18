@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useContext, useMemo } from "react";
+import { ReactNode, createContext, useContext, useMemo, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 
 export type AppSocket = {
@@ -58,6 +58,12 @@ export function SocketProvider({ children }: { children: ReactNode }) {
             }
         }), [websocket]
     );
+
+    useEffect(() => {
+        return () => {
+            websocket.disconnect();
+        };
+    }, [websocket]);
 
     return <context.Provider value={appSocket}>{children}</context.Provider>;
 }
