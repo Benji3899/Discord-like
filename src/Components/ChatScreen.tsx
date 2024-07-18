@@ -60,6 +60,8 @@ export const ChatScreen = () => {
 
         // Écoute les messages entrants
         socket.on("message", (message: { room: string, id: string, author: string, content: string }) => {
+            console.log(`Message reçu dans le salon ${message.room}:`, message);
+
             setMessagesByRoom(prevMessagesByRoom => {
                 const roomMessages = prevMessagesByRoom[message.room] || [];
                 if (roomMessages.find(msg => msg.id === message.id)) {
@@ -72,12 +74,19 @@ export const ChatScreen = () => {
             });
 
             if (message.room !== room) {
+                console.log(`Notification pour le salon ${message.room}`);
                 setNotifications(prevNotifications => ({
                     ...prevNotifications,
                     [message.room]: true
                 }));
             }
         });
+
+        return () => {
+            socket.off("message");
+            socket.off("connect");
+            socket.off("receivePrenom");
+        };
     }, [room, socket]);
 
     // Fonction pour rejoindre une nouvelle salle et réinitialiser les notifications

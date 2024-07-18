@@ -6,6 +6,7 @@ export type AppSocket = {
     send(message: { room: string, message: string }): void;
     joinRoom(room: string): void;
     on(event: string, callback: (...args: any[]) => void): void;
+    off(event: string, callback?: (...args: any[]) => void): void;
     emit(event: string, ...args: any[]): void;
     getId(): string | undefined;
 };
@@ -45,6 +46,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
             },
             on(event, callback) {
                 websocket.on(event, callback);
+            },
+            off(event, callback) {
+                websocket.off(event, callback);
             },
             emit(event, ...args) {
                 websocket.emit(event, ...args);

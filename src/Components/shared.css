@@ -1,0 +1,55 @@
+/* Styles partagés */
+.message-list {
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.message-input-container {
+    display: flex;
+    padding: 10px;
+    background-color: #555;
+}
+
+.message-input-container input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+
+.message-input-container input[type="submit"] {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+.message-input-container input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.my-message {
+    align-self: flex-end;
+    background-color: #4f545c;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
+.other-message {
+    align-self: flex-start;
+    background-color: #7289da;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 60%;
+    word-wrap: break-word;
+}
