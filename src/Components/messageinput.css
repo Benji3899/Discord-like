@@ -1,0 +1,16 @@
+.message-input-container {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.message-input-container input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.message-input-container input[type="submit"] {
+    padding: 10px;
+    font-size: 16px;
+}

@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from "react";
 import {useSocket} from "../providers/SocketProvider";
+import './messagelist.css';
 
 // Composant pour afficher un message individuel
 function Message({children}: { children: React.ReactNode }) {
@@ -57,7 +58,7 @@ export const MessageList = ({room, messages, addMessage}: MessageListProps) => {
     }, [messages]);
 
     return (
-        <div className="message-container">
+        <div className="message-list">
             {messages.map((message, index) => (
                 <div
                     key={message.id}

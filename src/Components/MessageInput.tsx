@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import {useSocket} from "../providers/SocketProvider";
+import './messageinput.css';
 
 // Composant pour l'entrée des messages de chat
 export const MessageInput = ({room}: { room: string }) => {
@@ -8,7 +9,7 @@ export const MessageInput = ({room}: { room: string }) => {
 
     return (
         <form
-            className="form"
+            className="message-input-container"
             onSubmit={(event) => {
                 event.preventDefault();
                 if (message.trim() === "") {

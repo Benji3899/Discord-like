@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {MessageInput} from "./MessageInput";
 import {MessageList} from "./MessageList";
 import {useSocket} from "../providers/SocketProvider";
+import './chatscreen.css';
 
 // Définir le type pour les messages
 interface Message {
@@ -70,17 +71,26 @@ export const ChatScreen = () => {
     };
 
     return (
-        <div>
-            <h1 className="text-center mb-2">Salon : {room}</h1>
-            <h2>Utilisateur : {prenom}</h2>
-            <div>
+        <div className="chat-container">
+            {/*<h1 className="text-center mb-2">Salon : {room}</h1>*/}
+            {/*<h2>Utilisateur : {prenom}</h2>*/}
+            <div className="sidebar">
+                <button onClick={openNewWindow}>Ouvrir une nouvelle fenêtre</button>
                 <button onClick={() => joinRoom("general")}>Général</button>
                 <button onClick={() => joinRoom("technologie")}>Technologie</button>
                 <button onClick={() => joinRoom("jeux")}>Jeux Vidéo</button>
+                <div className="username">Utilisateur : {prenom}</div>
             </div>
-            <MessageList room={room} messages={messagesByRoom[room]} addMessage={addMessage}/>
-            <MessageInput room={room}/>
-            <button onClick={openNewWindow}>Ouvrir une nouvelle fenêtre</button>
+            <div className="main-content">
+                <div className="header">
+                    <h1>Salon : {room}</h1>
+                </div>
+                <MessageList room={room} messages={messagesByRoom[room]} addMessage={addMessage} />
+                <MessageInput room={room} />
+            </div>
+            {/*<MessageList room={room} messages={messagesByRoom[room]} addMessage={addMessage}/>*/}
+            {/*<MessageInput room={room}/>*/}
+
         </div>
     );
 };
