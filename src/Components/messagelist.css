@@ -2,16 +2,26 @@
     flex: 1;
     overflow-y: auto;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .containerMessage {
     margin-bottom: 10px;
     padding: 10px;
-    background-color: #f1f1f1;
     border-radius: 5px;
+    max-width: 60%; /* Limite la largeur maximale des messages */
+    word-wrap: break-word; /* Permet de passer à la ligne si un mot est trop long */
 }
 
-.containerMessage div {
-    margin-bottom: 5px;
-    font-weight: bold;
+.my-message {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+    text-align: right;
+}
+
+.other-message {
+    background-color: #ffffff;
+    align-self: flex-start;
+    text-align: left;
 }

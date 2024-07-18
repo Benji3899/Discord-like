@@ -57,8 +57,7 @@ function main() {
         console.log("Nouvelle connexion :", socket.id);
 
         // Assigner un prénom à chaque socket
-        const prenom = generatePrenom(socket.id);
-        socket.data.prenom = prenom;
+        socket.data.prenom = generatePrenom(socket.id);
 
         // Envoyer le prénom au frontend
         socket.on("requestPrenom", () => {
@@ -85,6 +84,11 @@ function main() {
 
             // Émet le message uniquement aux sockets dans la même salle
             io.to(room).emit("message", {type: "chat-message", ...newMessage, room});
+        });
+
+        // Demander le prénom
+        socket.on("requestPrenom", () => {
+            socket.emit("receivePrenom", socket.data.prenom);
         });
 
         // Déconnexion

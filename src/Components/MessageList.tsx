@@ -3,8 +3,8 @@ import {useSocket} from "../providers/SocketProvider";
 import './messagelist.css';
 
 // Composant pour afficher un message individuel
-function Message({children}: { children: React.ReactNode }) {
-    return <div>{children}</div>;
+function Message({ children, className }: { children: React.ReactNode, className: string }) {
+    return <div className={className}>{children}</div>;
 }
 
 // Déclaration de type pour les événements de chat
@@ -20,6 +20,7 @@ interface MessageListProps {
     room: string;
     messages: { id: number, author: string, content: string }[];
     addMessage: (message: { id: number, author: string, content: string }) => void;
+    prenom: string;
 }
 
 // Fonction de type guard pour vérifier si un événement est un message de chat
@@ -28,7 +29,7 @@ function isChatEvent(event: unknown): event is ChatEvent {
 }
 
 // Composant pour afficher la liste des messages
-export const MessageList = ({room, messages, addMessage}: MessageListProps) => {
+export const MessageList = ({ room, messages, addMessage, prenom }: MessageListProps) => {
     const lastMessageRef = useRef<HTMLDivElement | null>(null);
     const socket = useSocket();
 
@@ -41,7 +42,7 @@ export const MessageList = ({room, messages, addMessage}: MessageListProps) => {
             if (message.room !== room) {
                 return; // Ignore les messages qui ne sont pas destinés à la salle actuelle
             }
-            addMessage({id: message.id, author: message.author, content: message.content});
+            addMessage({ id: message.id, author: message.author, content: message.content });
         };
 
         const unsubscribe = socket.onMessage(handleMessage);
@@ -63,9 +64,9 @@ export const MessageList = ({room, messages, addMessage}: MessageListProps) => {
                 <div
                     key={message.id}
                     ref={index === messages.length - 1 ? lastMessageRef : null}
-                    className="containerMessage"
+                    className={`containerMessage ${message.author === prenom ? "my-message" : "other-message"}`}
                 >
-                    <Message key={message.id}>
+                    <Message key={message.id} className={message.author === prenom ? "my-message" : "other-message"}>
                         {message.author} : {message.content}
                     </Message>
                 </div>
