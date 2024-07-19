@@ -9,6 +9,7 @@ interface Message {
     id: string; // string pour l'utilisation de uuid
     author: string;
     content: string;
+    room: string;
 }
 
 type MessagesByRoom = {
@@ -19,9 +20,13 @@ type NotificationsByRoom = {
     [room: string]: boolean;
 };
 
+interface ChatScreenProps {
+    prenom: string;
+}
+
 // Composant principal de la salle de chat, affichant la liste des messages et l'entrée des messages
-export const ChatScreen = () => {
-    const [room, setRoom] = useState("general");
+export const ChatScreen = ({ prenom }: ChatScreenProps) => {
+    const [room, setRoom] = useState<string>("general");
     const [messagesByRoom, setMessagesByRoom] = useState<MessagesByRoom>({
         general: [],
         technologie: [],
@@ -32,34 +37,26 @@ export const ChatScreen = () => {
         technologie: false,
         jeux: false,
     });
-    const [prenom, setPrenom] = useState("");
     const socket = useSocket();
 
-    // Rejoindre une salle à chaque fois que 'room' change
     useEffect(() => {
+        // Envoyer le prénom choisi au serveur
+        socket.emit("choosePrenom", prenom);
+
         socket.joinRoom(room);
 
         // Récupérer les messages du serveur
         fetch(`http://localhost:3000/messages/${room}`)
             .then(response => response.json())
-            .then(data => {
+            .then((data: Message[]) => {
                 setMessagesByRoom(prevMessagesByRoom => ({
                     ...prevMessagesByRoom,
                     [room]: data
                 }));
             });
 
-        // Recevoir le prénom attribué lors de la connexion
-        socket.on("connect", () => {
-            socket.emit("requestPrenom"); // Demande le prénom au backend
-        });
-
-        socket.on("receivePrenom", (prenom: string) => {
-            setPrenom(prenom); // Assigne le prénom reçu du backend
-        });
-
         // Écoute les messages entrants
-        socket.on("message", (message: { room: string, id: string, author: string, content: string }) => {
+        const handleMessage = (message: Message) => {
             console.log(`Message reçu dans le salon ${message.room}:`, message);
 
             setMessagesByRoom(prevMessagesByRoom => {
@@ -80,14 +77,24 @@ export const ChatScreen = () => {
                     [message.room]: true
                 }));
             }
-        });
+        };
+
+        const handleNotification = (notification: { room: string }) => {
+            console.log(`Notification reçue pour le salon ${notification.room}`);
+            setNotifications(prevNotifications => ({
+                ...prevNotifications,
+                [notification.room]: true
+            }));
+        };
+
+        socket.on("message", handleMessage);
+        socket.on("notification", handleNotification);
 
         return () => {
-            socket.off("message");
-            socket.off("connect");
-            socket.off("receivePrenom");
+            socket.off("message", handleMessage);
+            socket.off("notification", handleNotification);
         };
-    }, [room, socket]);
+    }, [room, socket, prenom]);
 
     // Fonction pour rejoindre une nouvelle salle et réinitialiser les notifications
     const handleJoinRoom = (newRoom: string) => {
@@ -96,6 +103,17 @@ export const ChatScreen = () => {
             ...prevNotifications,
             [newRoom]: false
         }));
+
+        socket.joinRoom(newRoom);
+
+        fetch(`http://localhost:3000/messages/${newRoom}`)
+            .then(response => response.json())
+            .then((data: Message[]) => {
+                setMessagesByRoom(prevMessagesByRoom => ({
+                    ...prevMessagesByRoom,
+                    [newRoom]: data
+                }));
+            });
     };
 
     const openNewWindow = () => {
@@ -124,19 +142,19 @@ export const ChatScreen = () => {
                 <MessageList
                     room={room}
                     messages={messagesByRoom[room] || []}
-                    addMessage={(message) => setMessagesByRoom(prevMessagesByRoom => {
+                    addMessage={(message) => setMessagesByRoom((prevMessagesByRoom) => {
                         const roomMessages = prevMessagesByRoom[room] || [];
                         if (roomMessages.find(msg => msg.id === message.id)) {
                             return prevMessagesByRoom; // Ne pas ajouter si le message existe déjà
                         }
                         return {
                             ...prevMessagesByRoom,
-                            [room]: [...roomMessages, message]
+                            [room]: [...roomMessages, message],
                         };
                     })}
                     prenom={prenom}
                 />
-                <MessageInput room={room} />
+                <MessageInput room={room} prenom={prenom} />
             </div>
         </div>
     );

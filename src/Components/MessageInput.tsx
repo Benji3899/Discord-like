@@ -1,9 +1,13 @@
-import React, {useState} from "react";
-import {useSocket} from "../providers/SocketProvider";
+import React, { useState } from "react";
+import { useSocket } from "../providers/SocketProvider";
 import './messageinput.css';
 
-// Composant pour l'entrée des messages de chat
-export const MessageInput = ({room}: { room: string }) => {
+interface MessageInputProps {
+    room: string;
+    prenom: string;
+}
+
+export const MessageInput = ({ room, prenom }: MessageInputProps) => {
     const [message, setMessage] = useState("");
     const socket = useSocket();
 
@@ -16,7 +20,7 @@ export const MessageInput = ({room}: { room: string }) => {
                     return; // Ne rien faire si le message est vide
                 }
                 // Envoie le message via le socket
-                socket.send({room, message});
+                socket.send({ room, message });
                 // et réinitialise l'entrée
                 setMessage("");
             }}
@@ -27,7 +31,7 @@ export const MessageInput = ({room}: { room: string }) => {
                 // Met à jour l'état du message à chaque changement dans l'input
                 onChange={(event) => setMessage(event.target.value)}
             />
-            <input type="submit" value="Envoyer"/>
+            <input type="submit" value="Envoyer" />
         </form>
     );
 };

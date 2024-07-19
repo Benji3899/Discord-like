@@ -1,8 +1,8 @@
-import {Server} from "socket.io";
+import { Server } from "socket.io";
 import cors from 'cors';
 import express from "express";
 import http from 'http';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 // Structure pour stocker les messages par salon
 const messagesByRoom: { [room: string]: { id: string, author: string, content: string }[] } = {};
@@ -12,6 +12,7 @@ const prenoms = ["Benjamin", "Tristan", "Evan", "Lucie", "Clément", "Alexandre"
 
 // Association des prénoms avec les identifiants des sockets
 const prenomBySocketId: { [socketId: string]: string } = {};
+const roomsBySocketId: { [socketId: string]: string[] } = {};
 
 // Ajout de la méthode hashCode à String
 declare global {
@@ -30,12 +31,6 @@ String.prototype.hashCode = function () {
     return hash;
 };
 
-// Fonction pour générer un prénom basé sur l'ID du socket
-const generatePrenom = (socketId: string) => {
-    const index = Math.abs(socketId.hashCode()) % prenoms.length;
-    return prenoms[index];
-};
-
 // Fonction principale pour initialiser le serveur
 function main() {
     const app = express();
@@ -51,6 +46,10 @@ function main() {
         }
     });
 
+    app.get('/prenoms', (req, res) => {
+        res.json(prenoms);
+    });
+
     app.get('/messages/:room', (req, res) => {
         const room = req.params.room;
         res.json(messagesByRoom[room] || []);
@@ -60,22 +59,26 @@ function main() {
     io.on("connection", (socket) => {
         console.log("Nouvelle connexion :", socket.id);
 
-        // Assigner un prénom à chaque socket
-        const prenom = generatePrenom(socket.id);
-        prenomBySocketId[socket.id] = prenom;
-
-        socket.on("requestPrenom", () => {
+        // Recevoir le prénom choisi par l'utilisateur
+        socket.on("choosePrenom", (prenom) => {
+            prenomBySocketId[socket.id] = prenom;
+            roomsBySocketId[socket.id] = []; // Initialise avec une liste vide de salons
+            console.log(`Prénom choisi pour ${socket.id} : ${prenom}`);
             socket.emit("receivePrenom", prenom);
         });
 
         // Rejoindre une salle spécifique
         socket.on("joinRoom", (room) => {
             socket.join(room);
-            console.log(`${prenom} - (${socket.id}) a rejoint la salle ${room}`);
+            if (!roomsBySocketId[socket.id].includes(room)) {
+                roomsBySocketId[socket.id].push(room); // Ajouter le salon à la liste des salons rejoints par le socket
+            }
+            console.log(`${prenomBySocketId[socket.id]} - (${socket.id}) a rejoint la salle ${room}`);
         });
 
         // Écoute les messages entrants sur la connexion
         socket.on("message", ({ room, message }) => {
+            const prenom = prenomBySocketId[socket.id];
             console.log(`Message reçu de ${prenom} : ${message} dans la salle ${room}`);
 
             const newMessage = { id: uuidv4(), author: prenom, content: message }; // Utilisation de UUID
@@ -88,12 +91,21 @@ function main() {
 
             // Émet le message uniquement aux sockets dans la même salle
             io.to(room).emit("message", { type: "chat-message", ...newMessage, room });
+
+            // Émettre une notification à tous les autres sockets qui ne sont pas dans la même salle
+            for (const [socketId, rooms] of Object.entries(roomsBySocketId)) {
+                if (!rooms.includes(room) && socketId !== socket.id) {
+                    io.to(socketId).emit("notification", { room });
+                }
+            }
         });
 
         // Déconnexion
         socket.on("disconnect", () => {
+            const prenom = prenomBySocketId[socket.id];
             console.log(`Déconnexion de ${prenom} :`, socket.id);
             delete prenomBySocketId[socket.id]; // Supprime l'association
+            delete roomsBySocketId[socket.id]; // Supprime les salons associés
         });
     });
 
